@@ -3,23 +3,24 @@ import {PropTypes} from 'prop-types';
 import {
     View,
     Text,
-    TouchableOpacity,
+    TouchableHighlight,
     StyleSheet 
 } from 'react-native';
 
 export default class CalcButton extends Component {
     static propTypes = {
         text: PropTypes.string.isRequired,
-        onPress: PropTypes.func.isRequired
+        onPress: PropTypes.func.isRequired,
+        buttonstyles: PropTypes.object
     };
     
     render(){
-        const { text, onPress } = this.props;
+        const { text, onPress, buttonStyles } = this.props;
         return (
             <View style={styles.container}>
-                <TouchableOpacity style={styles.buttonContainer} onPress={ onPress }>
+                <TouchableHighlight style={[styles.buttonContainer, buttonStyles]} onPress={ onPress }>
                     <Text style={ styles.textContainer }>{ text }</Text>
-                </TouchableOpacity>
+                </TouchableHighlight>
             </View>
         );
     }
@@ -35,10 +36,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderColor: 'black',
         borderWidth: 1,
-        borderStyle: 'solid'
+        borderStyle: 'solid',
+        backgroundColor: 'gray'
     },
     textContainer: {
         color: 'white',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        fontSize: 40
     }
 });

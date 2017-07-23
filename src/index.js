@@ -8,12 +8,46 @@ import {
 
 import CalcButton from './components/CalcButton';
 
+const CalcButtons = [
+        [
+            {label: 'CE', action: 'CE', buttonStyles: { backgroundColor: 'darkgray'} }, 
+            {label: 'C', action: 'C', buttonStyles: { backgroundColor: 'darkgray'} }, 
+            {label: '', action: ''}, 
+            {label: '÷', action: '/', buttonStyles: { backgroundColor: '#FFA500'} }
+        ],
+        [
+            {label: '7', action: 7}, 
+            {label: '8', action: 8}, 
+            {label: '9', action: 9}, 
+            {label: 'x', action: '*', buttonStyles: { backgroundColor: '#FFA500'} }
+        ],
+        [
+            {label: '4', action: 4}, 
+            {label: '5', action: 5}, 
+            {label: '6', action: 6}, 
+            {label: '+', action: '+', buttonStyles: { backgroundColor: '#FFA500'} }
+        ],
+        [
+            {label: '1', action: 1}, 
+            {label: '2', action: 2}, 
+            {label: '3', action: 3}, 
+            {label: '-', action: '-', buttonStyles: { backgroundColor: '#FFA500'} }
+        ],
+        [
+            {label: '0', action: 0}, 
+            {label: '', action: ''}, 
+            {label: '', action: ''}, 
+            {label: '=', action: '=', buttonStyles: { backgroundColor: '#FFA500'} }
+        ],
+    ]
+
 export default class Calculator extends Component {
     constructor (props) {
         super(props);
 
         this.state= {
-            currentValue: 0
+            currentValue: 0,
+            currentEquation: []
         }
     }
 
@@ -21,14 +55,17 @@ export default class Calculator extends Component {
         if( typeof(operand) === "number") {
             let currentValue = this.state.currentValue * 10;
             let newValue = currentValue + operand;
-            this.setState({
-                currentValue: newValue
-            });
+            if (newValue <= 9999999) {
+                this.setState({
+                    currentValue: newValue
+                });
+            }
         } else if (typeof(operand) === "string") {
-            let { currentValue, previousvalue, operator } = this.state;
+            let { currentValue, runningTotal, operator, currentEquation } = this.state;
  
+            let oldValue = currentValue;
             if (operator) {
-                currentValue = eval(previousvalue + operator + currentValue);
+                currentValue = eval(runningTotal + operator + currentValue);
             }
 
             switch(operand){
@@ -36,29 +73,34 @@ export default class Calculator extends Component {
                 case '-':
                 case '+':
                 case '*':
+                    currentEquation.push(oldValue, operand);
                     this.setState({
                         operator: operand,
-                        previousvalue: currentValue,
-                        currentValue: 0
+                        runningTotal: currentValue,
+                        currentValue: 0,
+                        currentEquation  
                     });
                     break;
                 case '=':
+                    currentEquation.push(oldValue);
                     this.setState({
                         operator: null,
-                        previousvalue: 0,
-                        currentValue: currentValue
+                        runningTotal: 0,
+                        currentValue: currentValue,
+                        currentEquation: []
                     });
                     break;
                 case 'C':
                     this.setState({
-                        currentValue: 0
+                        currentValue: 0,
                     });
                     break;
                 case 'CE':
                     this.setState({
                         operator: null,
-                        previousvalue: 0,
-                        currentValue: 0
+                        runningTotal: 0,
+                        currentValue: 0,
+                        currentEquation: []
                     });
                     break;
                 default:
@@ -67,50 +109,51 @@ export default class Calculator extends Component {
         }
     }
 
+    _buildCalcButtons () {
+        let renderElements = [];
+        CalcButtons.forEach((row, index) => {
+            renderElements.push(
+                <View key={index} style={styles.rowContainer}>
+                    {this._buildRow(row)}
+                </View>
+            );
+        });
+
+        return renderElements;
+    }
+
+    _buildRow (row) {
+        let renderElements = [];
+
+        row.forEach((item, index) => {
+            renderElements.push(
+                <CalcButton
+                    key={index}
+                    text={item.label} 
+                    onPress={ this._onCalculate.bind(this, item.action) }
+                    buttonStyles={item.buttonStyles}                    
+                />
+            )
+        });
+
+        return(renderElements);
+    }
 
     render() {
         return (
             <View style={styles.container}>
                 <View style={styles.screenContainer}>
+                    <Text style={ styles.equation }> { this.state.currentEquation.join(' ') } </Text>
                     <Text style={styles.currentValue}>{ this.state.currentValue }</Text>
                 </View>
                 <View style={styles.buttonConatiner}>
-                    <View style={ styles.rowContainer }>
-                        <CalcButton text={'CE'} onPress={ this._onCalculate.bind(this, 'CE') }></CalcButton>
-                        <CalcButton text={'C'} onPress={ this._onCalculate.bind(this, 'C') }></CalcButton>
-                        <CalcButton text={''} onPress={ noop }></CalcButton>
-                        <CalcButton text={'/'} onPress={ this._onCalculate.bind(this, '/') }></CalcButton>
-                    </View>
-                    <View style={ styles.rowContainer }>
-                        <CalcButton text={'7'} onPress={ this._onCalculate.bind(this, 7) }></CalcButton>
-                        <CalcButton text={'8'} onPress={ this._onCalculate.bind(this, 8) }></CalcButton>
-                        <CalcButton text={'9'} onPress={ this._onCalculate.bind(this, 9) }></CalcButton>
-                        <CalcButton text={'*'} onPress={ this._onCalculate.bind(this, '*') }></CalcButton>
-                    </View>
-                    <View style={ styles.rowContainer }>
-                        <CalcButton text={'4'} onPress={ this._onCalculate.bind(this, 4) }></CalcButton>
-                        <CalcButton text={'5'} onPress={ this._onCalculate.bind(this, 5) }></CalcButton>
-                        <CalcButton text={'6'} onPress={ this._onCalculate.bind(this, 6) }></CalcButton>
-                        <CalcButton text={'+'} onPress={ this._onCalculate.bind(this, '+') }></CalcButton>
-                    </View>
-                    <View style={ styles.rowContainer }>
-                        <CalcButton text={'1'} onPress={ this._onCalculate.bind(this, 1) }></CalcButton>
-                        <CalcButton text={'2'} onPress={ this._onCalculate.bind(this, 2) }></CalcButton>
-                        <CalcButton text={'3'} onPress={ this._onCalculate.bind(this, 3) }></CalcButton>
-                        <CalcButton text={'-'} onPress={ this._onCalculate.bind(this, '-') }></CalcButton>
-                    </View>
-                    <View style={ styles.rowContainer }>
-                        <CalcButton text={'0'} onPress={ this._onCalculate.bind(this, 0) }></CalcButton>
-                        <CalcButton text={''} onPress={ noop }></CalcButton>
-                        <CalcButton text={''} onPress={ noop }></CalcButton>
-                        <CalcButton text={'='} onPress={ this._onCalculate.bind(this, '=') }></CalcButton>
-                    </View>
+                    { this._buildCalcButtons() }
                 </View> 
             </View>
         );
     }
 }
-const noop = () => {};
+
 const styles = StyleSheet.create({
     container: {
         flex: 10,
@@ -119,17 +162,21 @@ const styles = StyleSheet.create({
     screenContainer: {
         flex: 3,
         backgroundColor: 'black',
-        justifyContent: 'flex-end'
+        justifyContent: 'flex-end',
+        alignContent: 'flex-end'
     },
-    buttonConatiner: {
-        flex: 7,
-        backgroundColor: 'gray'
+    equation: {
+        color: 'darkgray',
+        textAlign: 'right'
     },
     currentValue: {
         color: 'white',
         textAlign: 'right',
         fontSize: 100,
         fontWeight: 'bold'
+    },
+    buttonConatiner: {
+        flex: 7
     },
     rowContainer: {
         flex: 1,
